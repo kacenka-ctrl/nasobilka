@@ -18,36 +18,7 @@ Obsahuje dvě motivující mise:
 ├── manifest.json       # PWA konfigurace (uzamčení na výšku, ikona, barvy)
 ├── sw.js               # Service Worker pro hraní offline bez internetu
 └── README.md           # Návod na zprovoznění
-```
 
----
-
-## 🚀 Jak aplikaci publikovat na GitHub Pages zdarma
-
-1. **Vytvoření repozitáře na GitHubu:**
-   - Přihlaste se na [GitHub.com](https://github.com) a klikněte na zelené tlačítko **New** (Nový repozitář).
-   - Pojmenujte ho např. `nasobilka` a zvolte **Public** (Veřejný).
-   - Klikněte na **Create repository**.
-
-2. **Nahrání souborů:**
-   - V novém repozitáři klikněte na **Add file** ➔ **Upload files**.
-   - Přetáhněte všech 5 souborů:
-     - `index.html`
-     - `hasici.html`
-     - `police_game.html`
-     - `manifest.json`
-     - `sw.js`
-   - Dole klikněte na zelené tlačítko **Commit changes**.
-
-3. **Aktivace GitHub Pages (hosting zdarma):**
-   - V horním menu repozitáře klikněte na **Settings** (Nastavení).
-   - V levém bočním panelu vyberte položku **Pages**.
-   - V sekci **Build and deployment** u položky **Branch** vyberte větev `main` a složku `/ (root)`.
-   - Klikněte na **Save** (Uložit).
-   - Do 1–2 minut se nahoře objeví odkaz na vaši aplikaci:  
-     `https://<vase-jmeno>.github.io/nasobilka/`
-
----
 
 ## 📱 Jak aplikaci stáhnout a nainstalovat do mobilu
 
