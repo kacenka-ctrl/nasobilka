@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0b1329">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Hasičská mise: Násobilka a dělení</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Inter', sans-serif;
+            background-color: #0b1329;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100dvh;
+        }
+        @keyframes fire-flicker {
+            0%, 100% { transform: scale(1) rotate(-1deg); filter: drop-shadow(0 0 15px rgba(255, 69, 0, 0.8)); }
+            50% { transform: scale(1.08) rotate(2deg); filter: drop-shadow(0 0 25px rgba(255, 140, 0, 0.9)); }
+        }
+        .fire-anim {
+            animation: fire-flicker 1.2s infinite ease-in-out;
+        }
+        @keyframes water-splash {
+            0% { transform: scale(0.6) translateY(20px); opacity: 0; }
+            50% { transform: scale(1.15) translateY(-10px); opacity: 1; }
+            100% { transform: scale(1) translateY(0); opacity: 0; }
+        }
+        .water-splash-anim {
+            animation: water-splash 0.6s ease-out forwards;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        .shake-anim {
+            animation: shake 0.4s ease-in-out;
+        }
+        .bg-hivis { background-color: #f7ff00; }
+        .text-hivis { color: #eaff00; }
+    </style>
+</head>
+<body class="text-slate-100 flex flex-col justify-between p-2 sm:p-4 max-w-lg mx-auto">
+
+    <!-- Horní lišta s návratem a hodností -->
+    <header class="w-full bg-slate-900/90 border-2 border-red-600 rounded-2xl p-2.5 sm:p-3 shadow-xl mb-2">
+        <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <a href="index.html" class="p-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-xl text-sm" title="Zpět do menu">
+                    🏠
+                </a>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold text-white flex items-center gap-1.5">
+                        HASIČSKÁ MISE
+                        <span class="text-[10px] bg-red-700 text-yellow-300 px-1.5 py-0.2 rounded-full">HZS</span>
+                    </h1>
+                    <div class="text-[11px] text-yellow-300 font-semibold flex items-center gap-1">
+                        <span id="rankBadge" class="text-white bg-slate-800 px-1.5 rounded border border-yellow-500/40">Mladý hasič</span>
+                        <span id="streakCounter" class="text-orange-400 ml-1">🔥 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+                <button id="soundToggle" class="p-2 bg-slate-800 border border-slate-700 rounded-xl text-xs active:scale-95" title="Zvuk">
+                    <span id="soundIcon">🔊</span>
+                </button>
+                <div class="bg-red-950/70 border border-red-500/40 px-2 py-1 rounded-xl text-center">
+                    <div class="text-[9px] text-red-300 uppercase font-bold">Úspěšnost</div>
+                    <div id="scoreDisplay" class="text-xs sm:text-sm font-bold text-yellow-300">0 / 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Volba operace a násobků -->
+        <div class="mt-2.5 pt-2 border-t border-slate-800 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold uppercase text-slate-400">Typ zásahu:</span>
+                <div class="inline-flex rounded-lg p-0.5 bg-slate-950 border border-slate-800 text-xs font-bold">
+                    <button id="opMultiply" class="op-btn px-2.5 py-1 rounded bg-red-600 text-white shadow">✖️</button>
+                    <button id="opDivide" class="op-btn px-2.5 py-1 rounded text-slate-400">➗</button>
+                    <button id="opMixed" class="op-btn px-2.5 py-1 rounded text-slate-400">⚡ Mix</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[11px] font-bold uppercase text-slate-400">Násobky:</span>
+                    <div class="flex gap-1.5 text-[10px]">
+                        <button id="selectAllBtn" class="text-yellow-300">Vše (1-10)</button>
+                        <span class="text-slate-600">|</span>
+                        <button id="selectBasicBtn" class="text-yellow-300">Základ (2-5)</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-5 sm:grid-cols-10 gap-1">
+                    <button data-num="1" class="num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700">1</button>
+                    <button data-num="2" class="num-toggle py-1 rounded font-bold text-xs bg-red-600 text-white border border-yellow-400">2</button>
+                    <button data-num="3" class="num-toggle py-1 rounded font-bold text-xs bg-red-600 text-white border border-yellow-400">3</button>
+                    <button data-num="4" class="num-toggle py-1 rounded font-bold text-xs bg-red-600 text-white border border-yellow-400">4</button>
+                    <button data-num="5" class="num-toggle py-1 rounded font-bold text-xs bg-red-600 text-white border border-yellow-400">5</button>
+                    <button data-num="6" class="num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700">6</button>
+                    <button data-num="7" class="num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700">7</button>
+                    <button data-num="8" class="num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700">8</button>
+                    <button data-num="9" class="num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700">9</button>
+                    <button data-num="10" class="num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-300 border border-slate-700">10</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hlavní cvičiště -->
+    <main class="w-full flex-1 flex flex-col justify-center">
+        <div id="exerciseCard" class="w-full relative bg-gradient-to-b from-slate-900 to-slate-950 border-4 border-red-600 rounded-3xl p-4 shadow-2xl overflow-hidden text-center transition-all">
+            <div class="absolute top-0 left-0 right-0 h-2 bg-hivis flex">
+                <div class="h-full w-1/4 bg-red-600"></div>
+                <div class="h-full w-1/4 bg-hivis"></div>
+                <div class="h-full w-1/4 bg-red-600"></div>
+                <div class="h-full w-1/4 bg-hivis"></div>
+            </div>
+
+            <!-- Vizuál plamene -->
+            <div class="h-16 flex items-center justify-center relative mt-1">
+                <div id="fireScene" class="fire-anim text-5xl select-none transition-transform">🔥</div>
+                <div id="waterSplash" class="hidden absolute text-5xl water-splash-anim pointer-events-none">💦💧🌊</div>
+            </div>
+
+            <!-- Zadání -->
+            <div class="my-2">
+                <div class="flex items-center justify-center gap-3 text-4xl sm:text-5xl font-extrabold tracking-wider">
+                    <span id="numA" class="text-white">6</span>
+                    <span id="operationSign" class="text-yellow-400">×</span>
+                    <span id="numB" class="text-white">4</span>
+                    <span class="text-slate-500">=</span>
+                    <input id="answerInput" type="text" inputmode="none" readonly
+                        class="w-20 sm:w-24 py-1 text-center bg-slate-950 border-4 border-yellow-400 rounded-2xl text-yellow-300 font-extrabold text-3xl sm:text-4xl outline-none"
+                        placeholder="?" maxlength="4">
+                </div>
+            </div>
+
+            <!-- Zpětná vazba -->
+            <div id="feedbackText" class="min-h-[24px] text-xs sm:text-sm font-bold flex items-center justify-center gap-1">
+                <span class="text-yellow-300/80">Spočítej a vystříkni vodu!</span>
+            </div>
+
+            <!-- Numpad -->
+            <div class="mt-3 pt-2 border-t border-slate-800">
+                <div class="grid grid-cols-3 gap-1.5 max-w-xs mx-auto">
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="1">1</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="2">2</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="3">3</button>
+                    
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="4">4</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="5">5</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="6">6</button>
+                    
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="7">7</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="8">8</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="9">9</button>
+                    
+                    <button id="backspaceBtn" class="py-3 bg-red-950 hover:bg-red-900 border border-red-800 text-red-200 rounded-xl font-bold text-lg active:scale-95" title="Smazat">⌫</button>
+                    <button class="numpad-btn py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xl shadow active:scale-95" data-key="0">0</button>
+                    <button id="submitBtn" class="py-3 bg-yellow-400 hover:bg-yellow-300 text-slate-950 rounded-xl font-black text-xl shadow-lg active:scale-95" title="Uhasiť">💧</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-1 text-[11px] text-slate-500">
+        HZS ČR: Trpělivost přináší chladnou hlavu!
+    </footer>
+
+    <script>
+        const state = {
+            selectedNumbers: new Set([2, 3, 4, 5]),
+            mode: 'multiply',
+            currentProblem: null,
+            lastProblem: null,
+            totalSolved: 0,
+            correctCount: 0,
+            streak: 0,
+            soundEnabled: true,
+            isLocked: false
+        };
+
+        const RANKS = [
+            { min: 0, title: "Mladý hasič", icon: "🧑‍🚒" },
+            { min: 5, title: "Hasič III. třídy", icon: "🧯" },
+            { min: 10, title: "Záchranář specialista", icon: "🪓" },
+            { min: 18, title: "Strojník cisterny", icon: "🚒" },
+            { min: 28, title: "Velitel družstva", icon: "⭐" },
+            { min: 40, title: "Velitel zásahu HZS", icon: "🏆" }
+        ];
+
+        let synth, noiseSynth, audioInitialized = false;
+
+        function initAudio() {
+            if (audioInitialized) return;
+            try {
+                Tone.start();
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "triangle" },
+                    envelope: { attack: 0.02, decay: 0.1, sustain: 0.2, release: 0.3 }
+                }).toDestination();
+                synth.volume.value = -6;
+
+                noiseSynth = new Tone.NoiseSynth({
+                    noise: { type: 'white' },
+                    envelope: { attack: 0.01, decay: 0.25, sustain: 0 }
+                }).toDestination();
+                noiseSynth.volume.value = -10;
+
+                audioInitialized = true;
+            } catch (e) {}
+        }
+
+        function playCorrectSound() {
+            if (!state.soundEnabled) return;
+            initAudio();
+            try {
+                if (noiseSynth) noiseSynth.triggerAttackRelease("0.2");
+                if (synth) {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease(["C5", "G5"], "8n", now);
+                    synth.triggerAttackRelease(["E5", "C6"], "8n", now + 0.1);
+                }
+            } catch (e) {}
+        }
+
+        function playWrongSound() {
+            if (!state.soundEnabled) return;
+            initAudio();
+            try {
+                if (synth) synth.triggerAttackRelease(["Eb4", "D4"], "8n", Tone.now());
+            } catch (e) {}
+        }
+
+        function playFanfare() {
+            if (!state.soundEnabled) return;
+            initAudio();
+            try {
+                if (synth) {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease("G4", "16n", now);
+                    synth.triggerAttackRelease("C5", "16n", now + 0.1);
+                    synth.triggerAttackRelease("E5", "16n", now + 0.2);
+                    synth.triggerAttackRelease("G5", "4n", now + 0.3);
+                }
+            } catch (e) {}
+        }
+
+        function generateProblem() {
+            const numbers = Array.from(state.selectedNumbers);
+            if (numbers.length === 0) {
+                numbers.push(2, 3);
+                state.selectedNumbers.add(2);
+                state.selectedNumbers.add(3);
+                updateNumberButtons();
+            }
+
+            let type = state.mode === 'mixed' ? (Math.random() < 0.5 ? 'multiply' : 'divide') : state.mode;
+            let candidate = null, attempts = 0;
+
+            while (attempts < 50) {
+                attempts++;
+                const base = numbers[Math.floor(Math.random() * numbers.length)];
+                const other = Math.floor(Math.random() * 10) + 1;
+                let num1, num2, answer, symbol, key;
+
+                if (type === 'multiply') {
+                    const swap = Math.random() < 0.5;
+                    num1 = swap ? base : other;
+                    num2 = swap ? other : base;
+                    answer = num1 * num2;
+                    symbol = '×';
+                    key = `${num1}*${num2}`;
+                } else {
+                    const product = base * other;
+                    const divisor = Math.random() < 0.5 ? base : other;
+                    num1 = product;
+                    num2 = divisor;
+                    answer = num1 / num2;
+                    symbol = ':';
+                    key = `${num1}/${num2}`;
+                }
+
+                if (state.lastProblem) {
+                    if (state.lastProblem.key === key) continue;
+                    if (type === 'multiply' && state.lastProblem.symbol === '×') {
+                        if (state.lastProblem.num1 === num1 && state.lastProblem.num2 === num2) continue;
+                    }
+                }
+
+                candidate = { num1, num2, answer, symbol, key };
+                break;
+            }
+
+            if (!candidate) {
+                candidate = { num1: numbers[0], num2: 2, answer: numbers[0] * 2, symbol: '×', key: `${numbers[0]}*2` };
+            }
+            return candidate;
+        }
+
+        const numAEl = document.getElementById('numA');
+        const numBEl = document.getElementById('numB');
+        const operationSignEl = document.getElementById('operationSign');
+        const answerInput = document.getElementById('answerInput');
+        const feedbackText = document.getElementById('feedbackText');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const streakCounter = document.getElementById('streakCounter');
+        const rankBadge = document.getElementById('rankBadge');
+        const fireScene = document.getElementById('fireScene');
+        const waterSplash = document.getElementById('waterSplash');
+        const exerciseCard = document.getElementById('exerciseCard');
+
+        function displayProblem(prob) {
+            state.currentProblem = prob;
+            numAEl.textContent = prob.num1;
+            numBEl.textContent = prob.num2;
+            operationSignEl.textContent = prob.symbol;
+            answerInput.value = '';
+            fireScene.textContent = "🔥";
+            fireScene.className = "fire-anim text-5xl select-none transition-transform";
+            waterSplash.classList.add('hidden');
+            feedbackText.innerHTML = `<span class="text-slate-400">Počítej rychle, oheň čeká!</span>`;
+            state.isLocked = false;
+        }
+
+        function updateStatsUI() {
+            const pct = state.totalSolved > 0 ? Math.round((state.correctCount / state.totalSolved) * 100) : 100;
+            scoreDisplay.textContent = `${state.correctCount}/${state.totalSolved} (${pct}%)`;
+            streakCounter.textContent = `🔥 ${state.streak}`;
+
+            let currentRank = RANKS[0];
+            for (const r of RANKS) {
+                if (state.streak >= r.min) currentRank = r;
+            }
+            const oldText = rankBadge.textContent;
+            rankBadge.textContent = `${currentRank.icon} ${currentRank.title}`;
+            if (oldText !== `${currentRank.icon} ${currentRank.title}` && state.streak > 0) {
+                playFanfare();
+                feedbackText.innerHTML = `<span class="text-hivis font-extrabold animate-bounce">🎖️ POVÝŠENÍ: ${currentRank.title}!</span>`;
+            }
+        }
+
+        function checkAnswer() {
+            if (state.isLocked) return;
+            const val = answerInput.value.trim();
+            if (val === '') return;
+            const userNum = parseInt(val, 10);
+            if (isNaN(userNum)) return;
+
+            state.isLocked = true;
+            state.totalSolved++;
+
+            if (userNum === state.currentProblem.answer) {
+                state.correctCount++;
+                state.streak++;
+                playCorrectSound();
+                fireScene.textContent = "💨";
+                fireScene.className = "text-4xl opacity-70 transition-all";
+                waterSplash.classList.remove('hidden');
+                feedbackText.innerHTML = `<span class="text-emerald-400 font-bold">✅ Uhašeno! Správně: ${state.currentProblem.answer}</span>`;
+                exerciseCard.classList.add('ring-4', 'ring-emerald-500/60');
+                setTimeout(() => exerciseCard.classList.remove('ring-4', 'ring-emerald-500/60'), 600);
+                updateStatsUI();
+                setTimeout(() => {
+                    state.lastProblem = state.currentProblem;
+                    displayProblem(generateProblem());
+                }, 900);
+            } else {
+                state.streak = 0;
+                playWrongSound();
+                fireScene.textContent = "💥";
+                exerciseCard.classList.add('shake-anim', 'ring-4', 'ring-red-600');
+                feedbackText.innerHTML = `<span class="text-rose-400 font-bold">⚠️ Správně je <span class="text-yellow-300 font-black text-base underline ml-1">${state.currentProblem.answer}</span></span>`;
+                updateStatsUI();
+                setTimeout(() => {
+                    exerciseCard.classList.remove('shake-anim', 'ring-4', 'ring-red-600');
+                    state.lastProblem = state.currentProblem;
+                    displayProblem(generateProblem());
+                }, 1900);
+            }
+        }
+
+        // Fyzická klávesnice
+        window.addEventListener('keydown', (e) => {
+            initAudio();
+            if (e.key >= '0' && e.key <= '9') {
+                if (!state.isLocked && answerInput.value.length < 4) answerInput.value += e.key;
+            } else if (e.key === 'Backspace') {
+                if (!state.isLocked) answerInput.value = answerInput.value.slice(0, -1);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                checkAnswer();
+            }
+        });
+
+        // Numpad
+        document.querySelectorAll('.numpad-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                initAudio();
+                if (state.isLocked) return;
+                if (answerInput.value.length < 4) answerInput.value += btn.getAttribute('data-key');
+            });
+        });
+        document.getElementById('backspaceBtn').addEventListener('click', () => {
+            initAudio();
+            if (!state.isLocked) answerInput.value = answerInput.value.slice(0, -1);
+        });
+        document.getElementById('submitBtn').addEventListener('click', () => {
+            initAudio();
+            checkAnswer();
+        });
+
+        // Operace
+        const opBtns = { multiply: document.getElementById('opMultiply'), divide: document.getElementById('opDivide'), mixed: document.getElementById('opMixed') };
+        function setMode(m) {
+            state.mode = m;
+            Object.keys(opBtns).forEach(k => {
+                opBtns[k].className = k === m ? "op-btn px-2.5 py-1 rounded bg-red-600 text-white shadow" : "op-btn px-2.5 py-1 rounded text-slate-400";
+            });
+            displayProblem(generateProblem());
+        }
+        opBtns.multiply.onclick = () => setMode('multiply');
+        opBtns.divide.onclick = () => setMode('divide');
+        opBtns.mixed.onclick = () => setMode('mixed');
+
+        // Násobky
+        const numToggleBtns = document.querySelectorAll('.num-toggle');
+        function updateNumberButtons() {
+            numToggleBtns.forEach(btn => {
+                const n = parseInt(btn.getAttribute('data-num'), 10);
+                btn.className = state.selectedNumbers.has(n)
+                    ? "num-toggle py-1 rounded font-bold text-xs bg-red-600 text-white border border-yellow-400"
+                    : "num-toggle py-1 rounded font-bold text-xs bg-slate-800 text-slate-400 border border-slate-700";
+            });
+        }
+        numToggleBtns.forEach(btn => {
+            btn.onclick = () => {
+                const n = parseInt(btn.getAttribute('data-num'), 10);
+                if (state.selectedNumbers.has(n)) {
+                    if (state.selectedNumbers.size > 1) state.selectedNumbers.delete(n);
+                } else {
+                    state.selectedNumbers.add(n);
+                }
+                updateNumberButtons();
+                displayProblem(generateProblem());
+            };
+        });
+
+        document.getElementById('selectAllBtn').onclick = () => {
+            for (let i = 1; i <= 10; i++) state.selectedNumbers.add(i);
+            updateNumberButtons();
+            displayProblem(generateProblem());
+        };
+        document.getElementById('selectBasicBtn').onclick = () => {
+            state.selectedNumbers.clear();
+            [2, 3, 4, 5].forEach(n => state.selectedNumbers.add(n));
+            updateNumberButtons();
+            displayProblem(generateProblem());
+        };
+
+        const soundToggle = document.getElementById('soundToggle');
+        soundToggle.onclick = () => {
+            state.soundEnabled = !state.soundEnabled;
+            document.getElementById('soundIcon').textContent = state.soundEnabled ? '🔊' : '🔇';
+            if (state.soundEnabled) initAudio();
+        };
+
+        window.onload = () => {
+            updateNumberButtons();
+            updateStatsUI();
+            displayProblem(generateProblem());
+        };
+    </script>
+</body>
+</html>

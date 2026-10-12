@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#07101e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Záchranná násobilka">
+    <title>Záchranná akademie: Hasiči & Policie</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚨</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚨</text></svg>">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Inter', sans-serif;
+            background-color: #07101e;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            min-height: 100dvh;
+        }
+
+        @keyframes pulse-beacon {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.04); opacity: 1; }
+        }
+        .beacon-pulse {
+            animation: pulse-beacon 2s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between items-center p-4 text-slate-100 max-w-md mx-auto">
+
+    <!-- Horní záhlaví -->
+    <header class="w-full text-center pt-4">
+        <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-slate-900 border-2 border-yellow-400/60 shadow-lg shadow-blue-950/80 mb-3 beacon-pulse">
+            <span class="text-4xl">🚨</span>
+            <span class="text-4xl -ml-2">🚒</span>
+            <span class="text-4xl -ml-2">🚔</span>
+        </div>
+        <h1 class="text-2xl font-extrabold tracking-wide text-white uppercase drop-shadow">
+            Záchranná Akademie
+        </h1>
+        <p class="text-sm font-semibold text-yellow-300 mt-1">
+            Procvičování násobilky a dělení pro 3. třídu
+        </p>
+    </header>
+
+    <!-- Hlavní menu pro výběr zásahu (Přizpůsobeno na výšku / Portrait) -->
+    <main class="w-full my-auto flex flex-col gap-4 py-6">
+        <div class="text-xs uppercase tracking-wider text-slate-400 font-bold text-center">
+            Zvol si svou misi:
+        </div>
+
+        <!-- 1. Hasičská mise -->
+        <a href="hasici.html" class="group relative overflow-hidden bg-gradient-to-br from-red-900/90 to-slate-950 border-4 border-red-600 hover:border-yellow-400 rounded-3xl p-5 shadow-xl shadow-red-950/60 active:scale-95 transition-all">
+            <div class="absolute -right-4 -bottom-4 text-7xl opacity-15 pointer-events-none group-hover:scale-110 transition">🚒</div>
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center text-3xl shadow-md border-2 border-yellow-400 shrink-0">
+                    🔥
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        Hasičský zásah
+                        <span class="text-[10px] bg-red-700 text-yellow-300 px-2 py-0.5 rounded-full border border-yellow-400/40">HZS</span>
+                    </h2>
+                    <p class="text-xs text-slate-300 mt-1 leading-snug">
+                        Has plameny vodním dělem, zachraň budovy a získej hodnost velitele!
+                    </p>
+                </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-red-800/60 flex items-center justify-between text-xs font-bold text-yellow-300">
+                <span>Vstoupit do výjezdu ➔</span>
+                <span class="bg-red-950/80 px-2 py-0.5 rounded border border-red-600 text-[11px]">Násobení & Dělení</span>
+            </div>
+        </a>
+
+        <!-- 2. Policejní mise -->
+        <a href="police_game.html" class="group relative overflow-hidden bg-gradient-to-br from-blue-900/90 to-slate-950 border-4 border-blue-600 hover:border-yellow-400 rounded-3xl p-5 shadow-xl shadow-blue-950/60 active:scale-95 transition-all">
+            <div class="absolute -right-4 -bottom-4 text-7xl opacity-15 pointer-events-none group-hover:scale-110 transition">🚔</div>
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-3xl shadow-md border-2 border-yellow-400 shrink-0">
+                    👮‍♂️
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        Policejní zátah
+                        <span class="text-[10px] bg-blue-950 text-blue-300 px-2 py-0.5 rounded-full border border-blue-400/40">PČR</span>
+                    </h2>
+                    <p class="text-xs text-slate-300 mt-1 leading-snug">
+                        Vypočítej kódy, nasaď pouta a dopadni lupiče na útěku!
+                    </p>
+                </div>
+            </div>
+            <div class="mt-3 pt-3 border-t border-blue-800/60 flex items-center justify-between text-xs font-bold text-yellow-300">
+                <span>Zahájit hlídku ➔</span>
+                <span class="bg-blue-950/80 px-2 py-0.5 rounded border border-blue-600 text-[11px]">Násobení & Dělení</span>
+            </div>
+        </a>
+
+        <!-- Tlačítko pro instalaci (pokud prohlížeč podporuje PWA prompt) -->
+        <button id="pwaInstallBtn" class="hidden w-full py-3 px-4 bg-emerald-700 hover:bg-emerald-600 border-2 border-yellow-300 rounded-2xl text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 active:scale-95 transition">
+            <span>📲</span> Nainstalovat aplikaci do telefonu
+        </button>
+    </main>
+
+    <!-- Spodní informace a tip pro instalaci na mobil -->
+    <footer class="w-full text-center pb-4 text-[11px] text-slate-400">
+        <p class="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5">
+            📱 <strong>Tip pro telefon:</strong> V prohlížeči zvol <em>„Přidat na plochu“</em> a aplikace poběží na celé obrazovce bez adresního řádku. Funguje i offline!
+        </p>
+    </footer>
+
+    <script>
+        // Registrace Service Workeru pro offline fungování a instalaci
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(
+                    reg => console.log('SW registrován:', reg.scope),
+                    err => console.log('SW selhal:', err)
+                );
+            });
+        }
+
+        // Podpora PWA instalačního tlačítka pro Android Chrome
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwaInstallBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                installBtn.classList.add('hidden');
+            }
+            deferredPrompt = null;
+        });
+    </script>
+</body>
+</html>
